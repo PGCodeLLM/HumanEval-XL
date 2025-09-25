@@ -2,6 +2,7 @@
 import json
 import argparse
 import subprocess
+import numpy as np
 from pathlib import Path
 from typing import List, Dict, Any
 
@@ -14,14 +15,14 @@ def convert_inference_to_samples(inference_file: Path, programming_language: str
             line = line.strip()
             if line:
                 item = json.loads(line)
-
-                # Convert to HumanEval-XL sample format
-                sample = {
-                    "task_id": item["task_id"],
-                    "completion": item.get("response", ""),
-                    "language": programming_language
-                }
-                samples.append(sample)
+                completions = item.get("completion", [])
+                for completion in completions:
+                    sample = {
+                        "task_id": item["task_id"],
+                        "completion": completion,
+                        "language": programming_language
+                    }
+                    samples.append(sample)
 
     return samples
 
@@ -33,6 +34,7 @@ def main():
                        help="Programming language")
     parser.add_argument("--natural_language", type=str, required=True,
                        help="Natural language")
+    parser.add_argument("--num_workers", type=int, help="Number of parallel workers")
     parser.add_argument("--inference_file", type=str, required=True,
                        help="Inference results file")
     parser.add_argument("--evaluation_dir", type=str, required=True,
@@ -75,10 +77,10 @@ def main():
         "python", "-m", "mxeval.evaluate_functional_correctness",
         str(samples_file),
         "--problem_file", str(problem_file),
-        # "--k", "1,10,100,1000",
-        # "--n_workers", "8",
-        # "--timeout", "15.0"
+        "--k", "1,3",
     ]
+    if args.num_workers:
+        cmd += ["--n_workers", str(args.num_workers)]
 
     print(f"Executing: {' '.join(cmd)}")
     result = subprocess.run(cmd, cwd=script_dir, capture_output=True, text=True)

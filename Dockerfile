@@ -1,7 +1,4 @@
-FROM ubuntu:20.04
-
-# Install basic dependencies
-RUN apt-get update && apt-get install -y python3 python3-pip
+FROM python:3.11-slim
 
 WORKDIR /workspace
 
@@ -9,11 +6,11 @@ WORKDIR /workspace
 COPY . .
 
 # Install mxeval package
-RUN cd mxeval && python3 -m pip install -e .
+RUN cd mxeval && python -m pip install -e .
 
 RUN bash language_setup/ubuntu.sh
 
 # Set up environment variables
 ENV PYTHONPATH=/workspace
 
-CMD ["python3", "-m", "mxeval.evaluate_functional_correctness", "--help"]
+CMD ["python", "-m", "mxeval.evaluate_functional_correctness", "--help"]
