@@ -6,6 +6,34 @@ import numpy as np
 from pathlib import Path
 from typing import List, Dict, Any
 
+# for completion, we only need the completion code without any <think><think/> tags or ```language\n``` wrapper
+# e.g. <think>something</think>```python\ncode\n``` will become code
+def process_completions(completion: str, programming_language: str) -> str:
+    """Process completion to remove any markdown wrapper or think tags and think content"""
+    # Remove <think>...</think> tags and their content
+    while '<think>' in completion and '</think>' in completion:
+        start = completion.index('<think>')
+        end = completion.index('</think>') + len('</think>')
+        completion = completion[:start] + completion[end:]
+
+    # Remove ```language\n ... \n``` markdown code blocks
+    if '```' in completion:
+        parts = completion.split('```')
+        if len(parts) >= 3:
+            # Join all parts except the first and last (which are outside code blocks)
+            completion = ''.join(parts[1:-1]).strip()
+        else:
+            # If there's only one code block, take the content inside it
+            completion = parts[1].strip()
+
+    # remove leading language declaration if exists
+    lang_prefix = f"{programming_language}\n"
+    if completion.startswith(lang_prefix):
+        completion = completion[len(lang_prefix):]
+
+    return completion.strip()
+
+
 def convert_inference_to_samples(inference_file: Path, programming_language: str) -> List[Dict[str, Any]]:
     """Convert eval-cli inference results to HumanEval-XL sample format"""
     samples = []
@@ -19,7 +47,7 @@ def convert_inference_to_samples(inference_file: Path, programming_language: str
                 for completion in completions:
                     sample = {
                         "task_id": item["task_id"],
-                        "completion": completion,
+                        "completion": process_completions(completion, programming_language),
                         "language": programming_language
                     }
                     samples.append(sample)
