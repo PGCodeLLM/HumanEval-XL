@@ -23,7 +23,7 @@ def prepare_for_inference(problems: List[Dict[str, Any]]) -> List[Dict[str, Any]
     inference_data = []
 
     # Instruction to add to each prompt
-    completion_instruction = "Complete the body of the method below. Do not add imports, classes, or extra braces.\n\n"
+    completion_instruction = "Complete the code below. Only provide the method/function body without signatures, declarations, imports, or extra braces.\n\n"
 
     for problem in problems:
         # Add completion instruction to the beginning of the prompt
