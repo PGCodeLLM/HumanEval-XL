@@ -2,7 +2,6 @@
 import json
 import argparse
 import subprocess
-import numpy as np
 from pathlib import Path
 from typing import List, Dict, Any
 
@@ -129,8 +128,33 @@ def main():
     results_file = Path(str(samples_file) + "_results.jsonl")
 
     if passatk_file.exists():
+        # Load the pass@k results and convert numpy types to Python types
+        with open(passatk_file, 'r') as f:
+            content = f.read().strip()
+            try:
+                passatk_results = json.loads(content)
+            except json.JSONDecodeError:
+                # Handle numpy types by evaluating and converting
+                import numpy as np
+                passatk_results = eval(content)
+
+        # Convert numpy types to Python types for valid JSON
+        cleaned_results = {}
+        for key, value in passatk_results.items():
+            if hasattr(value, 'item'):  # numpy scalar
+                cleaned_results[key] = value.item()
+            elif isinstance(value, (np.integer, np.floating)):
+                cleaned_results[key] = float(value)
+            else:
+                cleaned_results[key] = value
+
+        # Save the cleaned results
         final_passatk = evaluation_dir / "evaluation_results.json"
-        passatk_file.rename(final_passatk)
+        with open(final_passatk, 'w') as f:
+            json.dump(cleaned_results, f, indent=2)
+
+        # Remove the original file
+        passatk_file.unlink()
         print(f"Pass@k results: {final_passatk}")
 
     if results_file.exists():
