@@ -8,7 +8,7 @@ COPY . .
 # Install mxeval package
 RUN cd mxeval && python -m pip install -e .
 
-RUN bash language_setup/ubuntu.sh
+RUN bash language_setup/docker.sh
 
 # Set up environment variables
 ENV PYTHONPATH=/workspace
