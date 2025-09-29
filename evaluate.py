@@ -43,6 +43,9 @@ def convert_inference_to_samples(inference_file: Path, programming_language: str
             if line:
                 item = json.loads(line)
                 completions = item.get("completion", [])
+                # Handle case where completion is a string instead of list
+                if isinstance(completions, str):
+                    completions = [completions]
                 for completion in completions:
                     sample = {
                         "task_id": item["task_id"],
