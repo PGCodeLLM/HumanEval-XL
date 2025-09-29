@@ -31,7 +31,7 @@ RUN cd mxeval && python -m pip install -e .
 
 # Set up environment variables
 ENV PYTHONPATH=/workspace
-ENV PATH="${PATH}:/usr/local/swift-5.7-RELEASE-ubuntu20.04/usr/bin:/usr/local/go/bin"
+ENV PATH="${PATH}:/usr/local/swift-5.7-RELEASE-ubuntu20.04/usr/bin:/usr/local/go/bin:/root/.rbenv/shims:/root/.sdkman/candidates/kotlin/current/bin"
 
 # Default command
 CMD ["python", "-m", "mxeval.evaluate_functional_correctness", "--help"]
